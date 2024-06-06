@@ -69,7 +69,7 @@ Developed by [@Fanboy041](https://github.com/Fanboy041) with assistance from [@w
 
 ### Running the Bot
 
-    ```
+    ```sh
     python bot.py
     ```
 
