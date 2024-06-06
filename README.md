@@ -58,13 +58,13 @@ Developed by [@Fanboy041](https://github.com/Fanboy041) with assistance from [@w
     pip install -r requirements.txt
     ```
 
-3. Create a `config.py` file and add your bot token and group ID:
+3. Create a `.env` file and add your bot token and group ID:
 
     ```python
-    API_ID = 'your_api_id'
-    API_HASH = 'your_api_hash'
-    BOT_TOKEN = 'your_bot_token'
-    GROUP_ID = 'your_group_id'
+    API_ID='your_api_id'
+    API_HASH='your_api_hash'
+    BOT_TOKEN='your_bot_token'
+    GROUP_ID='your_group_id'
     ```
 
 ### Running the Bot
