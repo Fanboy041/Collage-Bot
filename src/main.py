@@ -2,11 +2,10 @@ import logging
 import os
 import importlib
 from logging.handlers import RotatingFileHandler
-
+from telethon.tl.functions.channels import GetParticipantsRequest, GetFullChannelRequest
+from telethon.tl.types import ChannelParticipantsAdmins, ChannelParticipantsSearch
 from dotenv import load_dotenv
-from telethon import TelegramClient, events
-
-from Commands import startCommand
+from telethon import Button, TelegramClient, events
 
 # load the .env file
 load_dotenv()
@@ -42,11 +41,60 @@ try:
     # logging.info("Main script runs successfully, Bot is working")
 
     # Start command
-    @bot.on(event=events.NewMessage(pattern='/start'))
-    async def handle_start_command(event):
-        await startCommand.send_welcome(event, bot)
-        # if 'startCommand' in commands:
-        # commands['startCommand'].send_welcome(event, bot)
+
+
+
+    group_id = 'https://t.me/LLLLLLLLLPotcghv'  # Use the group ID or username
+
+    async def get_full_channel(group_id):
+
+        # Get full channel info
+        full_channel = await bot(GetFullChannelRequest(group_id))
+
+        print(full_channel)
+
+    async def get_admins(group_id):
+        # Get all participants who are admins
+        admins = await bot.get_participants(group_id, filter=ChannelParticipantsAdmins)
+
+        # Print admin details
+        for admin in admins:
+            print(f"Admin: {admin.first_name} {admin.last_name} ({admin.id})")
+
+
+    @bot.on(events.NewMessage(pattern='/start'))
+    async def start(event):
+        sender = await event.get_sender()
+        await get_admins(group_id)
+        await get_full_channel(group_id)
+        limit = 100
+        offset = 0
+        all_participants = []
+
+        while True:
+            participants = await bot(GetParticipantsRequest(
+                channel=group_id,
+                filter=ChannelParticipantsSearch(''),
+                offset=offset,
+                limit=limit,
+                hash=0
+            ))
+            if not participants.users:
+                break
+            all_participants.extend(participants.users)
+            offset += len(participants.users)
+
+        if sender in all_participants:
+            await event.respond("Welcome!")
+        else:
+            await event.respond(
+                "Join the group",
+                buttons=[
+                    [Button.url("Join Group", "https://t.me/LLLLLLLLLPotcghv")]
+                ])
+
+
+
 
     bot.run_until_disconnected()
 except KeyboardInterrupt:
