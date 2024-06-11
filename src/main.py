@@ -3,7 +3,7 @@ import os
 import importlib
 from logging.handlers import RotatingFileHandler
 from telethon.tl.functions.channels import GetParticipantsRequest, GetFullChannelRequest
-from telethon.tl.types import ChannelParticipantsAdmins, ChannelParticipantsSearch
+from telethon.tl.types import ChannelParticipantsAdmins, ChannelParticipantsSearch, PeerChannel
 from dotenv import load_dotenv
 from telethon import Button, TelegramClient, events
 
@@ -40,36 +40,21 @@ try:
     #
     # logging.info("Main script runs successfully, Bot is working")
 
-    # Start command
-
-
-
     group_id = 'https://t.me/LLLLLLLLLPotcghv'  # Use the group ID or username
-
-    async def get_full_channel(group_id):
-
-        # Get full channel info
-        full_channel = await bot(GetFullChannelRequest(group_id))
-
-        print(full_channel)
-
-    async def get_admins(group_id):
-        # Get all participants who are admins
-        admins = await bot.get_participants(group_id, filter=ChannelParticipantsAdmins)
-
-        # Print admin details
-        for admin in admins:
-            print(f"Admin: {admin.first_name} {admin.last_name} ({admin.id})")
 
 
     @bot.on(events.NewMessage(pattern='/start'))
     async def start(event):
         sender = await event.get_sender()
-        await get_admins(group_id)
-        await get_full_channel(group_id)
+        user_id = sender.id
+
         limit = 100
         offset = 0
         all_participants = []
+
+        # Get all participants who are admins
+        admins = await bot.get_participants(group_id, filter=ChannelParticipantsAdmins)
+
 
         while True:
             participants = await bot(GetParticipantsRequest(
@@ -84,18 +69,63 @@ try:
             all_participants.extend(participants.users)
             offset += len(participants.users)
 
-        if sender in all_participants:
-            await event.respond("Welcome!")
+        buttons = [
+                        [Button.inline("السنة الأولى", data="first_class")],
+                        [Button.inline("السنة الثانية", data="second_class")],
+                        [Button.inline("السنة الثالثة", data="third_class")],
+                        [Button.inline("السنة الرابعة", data="forth_class")]
+                    ]
+
+        # بعرف فينا نختصر هدول الحلقات بس عفتها مشان عدلها بعدين
+        if sender in all_participants and sender in admins and user_id == 1257415932:
+            await event.respond("أهلا وسهلا بك في البوت الخاص بجميع مقررات كلية الحقوق في جامعة حلب")
+            await event.respond("اختر السنة:", buttons = buttons)
+
+        elif sender in all_participants:
+            await event.respond("أهلا وسهلا بك في البوت الخاص بجميع مقررات كلية الحقوق في جامعة حلب")
+            await event.respond("اختر السنة:", buttons = buttons)
+
         else:
-            await event.respond(
-                "Join the group",
-                buttons=[
-                    [Button.url("Join Group", "https://t.me/LLLLLLLLLPotcghv")]
-                ])
+            await event.respond("عذرا, يبدو أنك لست منضماً إلى المجموعة الخاصة بنا\n\nأرجو منك الانضمام بواسطة الزر الموجود أسفل هذه الرسالة", buttons=[[Button.url("الانضمام", "https://t.me/LLLLLLLLLPotcghv")]])
 
-
+    # Make callback query handlers for the buttons
+    @bot.on(events.CallbackQuery())
+    async def callback_query_handler(event):
+        data = event.data
+        if data == b'first_class':
+            await bot.edit_message(event.sender_id, event.message_id, "اختر الفصل", buttons=[
+                [Button.inline("الفصل الأول", data="first_semester_st")],
+                [Button.inline("الفصل الثاني", data="second_semester_st")],
+                [Button.inline("• الرجوع •", data="backMain")]
+            ])
+        elif data == b'second_class':
+            await bot.edit_message(event.sender_id, event.message_id, "اختر الفصل", buttons=[
+                [Button.inline("الفصل الأول", data="first_semester_nd")],
+                [Button.inline("الفصل الثاني", data="second_semester_nd")],
+                [Button.inline("• الرجوع •", data="backMain")]
+            ])
+        elif data == b'third_class':
+            await bot.edit_message(event.sender_id, event.message_id, "اختر الفصل", buttons=[
+                [Button.inline("الفصل الأول", data="first_semester_rd")],
+                [Button.inline("الفصل الثاني", data="second_semester_rd")],
+                [Button.inline("• الرجوع •", data="backMain")]
+            ])
+        elif data == b'forth_class':
+            await bot.edit_message(event.sender_id, event.message_id, "اختر الفصل", buttons=[
+                [Button.inline("الفصل الأول", data="first_semester_th")],
+                [Button.inline("الفصل الثاني", data="second_semester_th")],
+                [Button.inline("• الرجوع •", data="backMain")]
+            ])
+        elif data == b'backMain':
+            await bot.edit_message(event.sender_id, event.message_id, "اختر السنة", buttons=[
+                [Button.inline("السنة الأولى", data="first_class")],
+                [Button.inline("السنة الثانية", data="second_class")],
+                [Button.inline("السنة الثالثة", data="third_class")],
+                [Button.inline("السنة الرابعة", data="forth_class")]
+            ])
 
 
     bot.run_until_disconnected()
 except KeyboardInterrupt:
     logging.info("Polling manually interrupted.")
+
