@@ -1,12 +1,13 @@
 import logging
 import os
+import json
+import base64
 # import importlib
 from logging.handlers import RotatingFileHandler
 from telethon.tl.functions.channels import GetParticipantsRequest
-from telethon.tl.types import ChannelParticipantsAdmins, ChannelParticipantsSearch
+from telethon.tl.types import ChannelParticipantsAdmins, ChannelParticipantsSearch, InputDocument
 from dotenv import load_dotenv
-from telethon import Button, TelegramClient, events
-
+from telethon import Button, TelegramClient, events, types
 # load the .env file
 load_dotenv()
 
@@ -41,6 +42,80 @@ try:
     # logging.info("Main script runs successfully, Bot is working")
 
     group_id = 'https://t.me/LLLLLLLLLPotcghv'  # Use the group ID or username
+
+    # Load uploaded files from JSON, or create an empty list if none exist
+    try:
+        with open('uploaded_files.json', 'r') as file:
+            uploaded_files = json.load(file)
+    except FileNotFoundError:
+        uploaded_files = []
+
+    upload_status = {}
+
+    @bot.on(events.NewMessage(pattern='/upload'))
+    async def start_upload_process(event):
+        await event.respond("Please upload one or more files. Press 'Done' when finished.")
+        upload_status[event.chat_id] = {'files': [], 'done': False}
+        await show_done_button(event.chat_id)
+
+    async def show_done_button(chat_id):
+        markup = types.ReplyKeyboardForceReply(single_use=True, selective=True)
+        await bot.send_message(chat_id, "Press 'Done' when finished uploading.")
+
+
+    @bot.on(events.NewMessage(func=lambda e: e.text and e.text.lower() == 'done'))
+    async def process_upload(event):
+        try:
+            chat_id = event.chat_id
+            user_upload_status = upload_status.get(chat_id, {})
+            files = user_upload_status.get('files', [])
+
+            if files:
+                uploaded_files.extend(files)
+                await event.respond("Files uploaded successfully. Use /download to get the files.")
+
+                with open('uploaded_files.json', 'w') as file:
+                    json.dump(uploaded_files, file)
+
+                upload_status.pop(chat_id, None)
+            else:
+                await event.respond("No files uploaded. Use /upload to upload files.")
+
+        except Exception as e:
+            print(f"Error in process_upload: {e}")
+            await event.respond("An error occurred. Please try again.")
+
+
+    @bot.on(events.NewMessage(func=lambda e: e.message.document))
+    async def handle_document(event):
+        chat_id = event.chat_id
+        user_upload_status = upload_status.get(chat_id, {})
+
+        if not user_upload_status.get('done', False):
+            file_id = event.message.document.id
+            access_hash = event.message.document.access_hash
+            file_reference = base64.b64encode(event.message.document.file_reference).decode('utf-8')
+
+            file_data = (file_id, access_hash, file_reference)
+            user_upload_status['files'].append(file_data)
+        else:
+            await event.respond("You have already pressed 'Done'. Use /upload to start a new upload session.")
+
+
+    @bot.on(events.NewMessage(pattern='/download'))
+    async def download_handler(event):
+        try:
+            if uploaded_files:
+                for file_data in uploaded_files:
+                    file_id, access_hash, file_reference = file_data
+                    file_reference = base64.b64decode(file_reference.encode('utf-8'))
+                    file = InputDocument(id=file_id, access_hash=access_hash, file_reference=file_reference)
+                    await bot.send_file(event.chat_id, file)
+            else:
+                await event.respond("No files have been uploaded yet.")
+        except Exception as e:
+            print(f"Error in download_handler: {e}")
+            await event.respond("An error occurred while downloading the files.")
 
 
     @bot.on(events.NewMessage(pattern='/start'))
