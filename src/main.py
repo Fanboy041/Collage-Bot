@@ -288,6 +288,12 @@ Button.inline("قانون العقوبات العام", b"General penal code")],
 [Button.inline("التشريع البيئي", b"Environmental legislation"), Button.inline("التحكيم التجاري", b"Commercial arbitration")],
 [Button.inline("• الرجوع •", data="backMain")]
 ])
+
+        elif data == b'History of law' and event.sender_id == 1263630470:
+            await bot.edit_message(event.sender_id, event.message_id, "ماذا ستفعل", buttons = [
+[Button.inline("إضافة ملف", b"Add File")],
+[Button.inline("عرض الملفات", b"Add File")]
+])
     bot.run_until_disconnected()
 except KeyboardInterrupt:
     logging.info("Polling manually interrupted.")
