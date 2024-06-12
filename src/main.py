@@ -52,20 +52,20 @@ try:
 
     upload_status = {}
 
-    @bot.on(events.NewMessage(pattern='/upload'))
-    async def start_upload_process(event):
-        await event.respond("Please upload one or more files. Press 'Done' when finished.")
-        upload_status[event.chat_id] = {'files': [], 'done': False}
-        await show_done_button(event.chat_id)
+    # @bot.on(events.NewMessage(pattern='/upload'))
+    # async def start_upload_process(event):
+    #     await event.respond("Please upload one or more files. Press 'Done' when finished.")
+    #     upload_status[event.chat_id] = {'files': [], 'done': False}
+    #     await show_done_button(event.chat_id)
 
-    # Maek "Done" button.text in a custom keyboard
-    async def show_done_button(chat_id):
-        keyboard = [
-            [
-                Button.text('Done', resize=True, single_use=True),
-            ]
-        ]
-        await bot.send_message(chat_id, 'Press "Done" when finished uploading files.', buttons=keyboard)
+    # # Maek "Done" button.text in a custom keyboard
+    # async def show_done_button(chat_id):
+    #     keyboard = [
+    #         [
+    #             Button.text('Done', resize=True, single_use=True),
+    #         ]
+    #     ]
+    #     await bot.send_message(chat_id, 'Press "Done" when finished uploading files.', buttons=keyboard)
 
 
     @bot.on(events.NewMessage(func=lambda e: e.text and e.text.lower() == 'done'))
@@ -289,11 +289,24 @@ Button.inline("قانون العقوبات العام", b"General penal code")],
 [Button.inline("• الرجوع •", data="backMain")]
 ])
 
-        elif data == b'History of law' and event.sender_id == 1263630470:
+        elif data == b'History of law':
             await bot.edit_message(event.sender_id, event.message_id, "ماذا ستفعل", buttons = [
-[Button.inline("إضافة ملف", b"Add File")],
-[Button.inline("عرض الملفات", b"Add File")]
+[Button.inline("إضافة ملف", b"Add File_History of law")],
+[Button.inline("عرض الملفات", b"Show Files_History of law")]
 ])
+
+
+        elif data == b'Add File_History of law':
+            keyboard = [
+                [
+                    Button.text('Done', resize=True, single_use=True),
+                ]
+            ]
+            await bot.send_message(event.chat_id, 'Press "Done" when finished uploading files.', buttons=keyboard)
+
+            upload_status[event.chat_id] = {'files': [], 'done': False}
+
+
     bot.run_until_disconnected()
 except KeyboardInterrupt:
     logging.info("Polling manually interrupted.")
