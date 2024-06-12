@@ -77,14 +77,14 @@ try:
 
             if files:
                 uploaded_files.extend(files)
-                await event.respond("Files uploaded successfully. Use /download to get the files.")
+                await event.respond("Files uploaded successfully. Use /download to get the files.", buttons=Button.clear())
 
                 with open('uploaded_files.json', 'w') as file:
                     json.dump(uploaded_files, file)
 
                 upload_status.pop(chat_id, None)
             else:
-                await event.respond("No files uploaded. Use /upload to upload files.")
+                await event.respond("No files uploaded. Use /upload to upload files.", buttons=Button.clear())
 
         except Exception as e:
             print(f"Error in process_upload: {e}")
