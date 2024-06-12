@@ -58,9 +58,14 @@ try:
         upload_status[event.chat_id] = {'files': [], 'done': False}
         await show_done_button(event.chat_id)
 
+    # Maek "Done" button.text in a custom keyboard
     async def show_done_button(chat_id):
-        markup = types.ReplyKeyboardForceReply(single_use=True, selective=True)
-        await bot.send_message(chat_id, "Press 'Done' when finished uploading.")
+        keyboard = [
+            [
+                Button.text('Done', resize=True, single_use=True),
+            ]
+        ]
+        await bot.send_message(chat_id, 'Press "Done" when finished uploading files.', buttons=keyboard)
 
 
     @bot.on(events.NewMessage(func=lambda e: e.text and e.text.lower() == 'done'))
